@@ -52,7 +52,6 @@ def compile_from_input_json(
     Returns: standard compiler output json
     """
 
-    #input_json["settings"]["viaIR"] = True
     optimizer = input_json["settings"]["optimizer"]
     input_json["settings"].setdefault("evmVersion", None)
     if input_json["settings"]["evmVersion"] in EVM_EQUIVALENTS:
@@ -308,8 +307,6 @@ def _generate_coverage_data(
     if not opcodes_str:
         return {}, {}, {}
 
-
-    #return {}, {}, {}
     source_map = deque(expand_source_map(source_map_str))
     opcodes = deque(opcodes_str.split(" "))
 
