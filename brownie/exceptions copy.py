@@ -116,9 +116,20 @@ class VirtualMachineError(Exception):
 
         self.message: str = exc["message"].rstrip(".")
 
-        if isinstance(exc["data"], str) and exc["data"].startswith("0x"):
+        if isinstance(exc["data"], str):
+            # handle parity exceptions - this logic probably is not perfect
+            if not exc["data"].startswith(ERROR_SIG):
+                err_msg = exc["data"]
+                if err_msg.endswith("0x"):
+                    err_msg = exc["data"][:-2].strip()
+                #raise ValueError(f"{self.message}: {err_msg}") from None
+
             self.revert_type = "revert"
-            self.revert_msg = decode_typed_error(exc["data"])
+            #err_msg = exc["data"][len(ERROR_SIG) :]
+            #(err_msg,) = eth_abi.decode(["string"], HexBytes(err_msg))
+            err_msg = exc["data"]
+            self.revert_msg = err_msg
+
             return
 
         try:
@@ -292,6 +303,6 @@ def decode_typed_error(data: str) -> str:
         if selector == ERROR_SIG:
             return result[0]
         else:
-            return f"{_errors[selector]['name']}: {', '.join(str(i) for i in result)}"
+            return f"{_errors[selector]['name']}: {', '.join(result)}"
     else:
         return f"Unknown typed error: {data}"
