@@ -52,8 +52,8 @@ CLI_FLAGS = {
     },
 }
 
-EVM_VERSIONS = ["byzantium", "constantinople", "petersburg", "istanbul"]
-EVM_DEFAULT = "istanbul"
+EVM_VERSIONS = ["byzantium", "constantinople", "petersburg", "istanbul", "shanghai"]
+EVM_DEFAULT = "shanghai"
 
 
 def launch(cmd: str, **kwargs: Dict) -> None:

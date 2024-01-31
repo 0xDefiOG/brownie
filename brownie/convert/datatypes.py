@@ -207,6 +207,8 @@ class EthAddress(str):
         if isinstance(value, bytes):
             converted_value = HexBytes(value).hex()
         converted_value = eth_utils.add_0x_prefix(str(converted_value))  # type: ignore
+        if converted_value == "0xNone":
+            converted_value = "0x0000000000000000000000000000000000000000"
         try:
             converted_value = eth_utils.to_checksum_address(converted_value)
         except ValueError:

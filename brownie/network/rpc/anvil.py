@@ -70,9 +70,8 @@ def sleep(seconds: int) -> int:
 
 
 def mine(timestamp: Optional[int] = None) -> None:
-    if timestamp:
-        _request("evm_setNextBlockTimestamp", [timestamp])
-    _request("evm_mine", [1])
+    params = [timestamp] if timestamp else []
+    _request("evm_mine", params)
 
 
 def snapshot() -> int:

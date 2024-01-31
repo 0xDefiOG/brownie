@@ -230,13 +230,13 @@ live:
 development:
   - name: Anvil
     id: anvil
-    cmd: anvil
+    cmd: anvil --block-base-fee-per-gas 0 --steps-tracing --auto-impersonate
     host: http://127.0.0.1
     cmd_settings:
       port: 8545
   - name: Anvil (Mainnet Fork)
     id: anvil-fork
-    cmd: anvil
+    cmd: anvil --auto-impersonate
     host: http://127.0.0.1
     cmd_settings:
       fork: mainnet

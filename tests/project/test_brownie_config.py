@@ -114,7 +114,7 @@ def test_validate_cmd_settings():
         network_id: 444
         time: 2019-04-05T14:30:11
         accounts: 4
-        evm_version: istanbul
+        evm_version: shanghai
         mnemonic: brownie
         account_keys_path: ../../
         fork: main
