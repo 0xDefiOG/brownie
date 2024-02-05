@@ -3,7 +3,7 @@
 import json
 from copy import deepcopy
 from hashlib import sha1
-from pathlib import Path
+from pathlib import PurePath
 from typing import Dict, Optional, Union
 
 import solcast
@@ -78,15 +78,15 @@ def compile_and_format(
     if interface_sources is None:
         interface_sources = {}
 
-    if [i for i in contract_sources if Path(i).suffix not in (".sol", ".vy")]:
+    if [i for i in contract_sources if PurePath(i).suffix not in (".sol", ".vy")]:
         raise UnsupportedLanguage("Source suffixes must be one of ('.sol', '.vy')")
-    if [i for i in interface_sources if Path(i).suffix not in (".sol", ".vy", ".json")]:
+    if [i for i in interface_sources if PurePath(i).suffix not in (".sol", ".vy", ".json")]:
         raise UnsupportedLanguage("Interface suffixes must be one of ('.sol', '.vy', '.json')")
 
     build_json: Dict = {}
     compiler_targets = {}
 
-    vyper_sources = {k: v for k, v in contract_sources.items() if Path(k).suffix == ".vy"}
+    vyper_sources = {k: v for k, v in contract_sources.items() if PurePath(k).suffix == ".vy"}
     if vyper_sources:
         # TODO add `vyper_version` input arg to manually specify, support in config file
         if vyper_version is None:
@@ -95,7 +95,7 @@ def compile_and_format(
             )
         else:
             compiler_targets[vyper_version] = list(vyper_sources)
-    solc_sources = {k: v for k, v in contract_sources.items() if Path(k).suffix == ".sol"}
+    solc_sources = {k: v for k, v in contract_sources.items() if PurePath(k).suffix == ".sol"}
     if solc_sources:
         if solc_version is None:
             compiler_targets.update(
@@ -113,7 +113,7 @@ def compile_and_format(
             set_vyper_version(version)
             language = "Vyper"
             compiler_data["version"] = str(vyper.get_version())
-            interfaces = {k: v for k, v in interface_sources.items() if Path(k).suffix != ".sol"}
+            interfaces = {k: v for k, v in interface_sources.items() if PurePath(k).suffix != ".sol"}
         else:
             set_solc_version(version)
             language = "Solidity"
@@ -121,7 +121,7 @@ def compile_and_format(
             interfaces = {
                 k: v
                 for k, v in interface_sources.items()
-                if Path(k).suffix == ".sol" and Version(version) in sources.get_pragma_spec(v, k)
+                if PurePath(k).suffix == ".sol" and Version(version) in sources.get_pragma_spec(v, k)
             }
 
         to_compile = {k: v for k, v in contract_sources.items() if k in path_list}
@@ -296,7 +296,7 @@ def generate_build_json(
         if path_str in input_json["sources"]:
             source = input_json["sources"][path_str]["content"]
         else:
-            with Path(path_str).open(encoding="utf-8") as fp:
+            with PurePath(path_str).open(encoding="utf-8") as fp:
                 source = fp.read()
             contract_alias = _get_alias(contract_name, path_str)
 
@@ -368,7 +368,7 @@ def generate_build_json(
 def _sources_dict(original: Dict, language: str) -> Dict:
     result: Dict = {}
     for key, value in original.items():
-        if Path(key).suffix == ".json":
+        if PurePath(key).suffix == ".json":
             if isinstance(value, str):
                 value = json.loads(value)
             result[key] = {"abi": value}
@@ -406,19 +406,19 @@ def get_abi(
     """
 
     final_output = {
-        Path(k).stem: {
+        PurePath(k).stem: {
             "abi": json.loads(v),
-            "contractName": Path(k).stem,
+            "contractName": PurePath(k).stem,
             "type": "interface",
             "source": None,
             "offset": None,
             "sha1": sha1(v.encode()).hexdigest(),
         }
         for k, v in contract_sources.items()
-        if Path(k).suffix == ".json"
+        if PurePath(k).suffix == ".json"
     }
 
-    for path, source in [(k, v) for k, v in contract_sources.items() if Path(k).suffix == ".vy"]:
+    for path, source in [(k, v) for k, v in contract_sources.items() if PurePath(k).suffix == ".vy"]:
         input_json = generate_input_json({path: source}, language="Vyper")
         input_json["settings"]["outputSelection"]["*"] = {"*": ["abi"]}
         try:
@@ -427,7 +427,7 @@ def get_abi(
             # vyper interfaces do not convert to ABIs
             # https://github.com/vyperlang/vyper/issues/1944
             continue
-        name = Path(path).stem
+        name = PurePath(path).stem
         final_output[name] = {
             "abi": output_json["contracts"][path][name]["abi"],
             "contractName": name,
@@ -437,7 +437,7 @@ def get_abi(
             "sha1": sha1(contract_sources[path].encode()).hexdigest(),
         }
 
-    solc_sources = {k: v for k, v in contract_sources.items() if Path(k).suffix == ".sol"}
+    solc_sources = {k: v for k, v in contract_sources.items() if PurePath(k).suffix == ".sol"}
 
     if not solc_sources:
         return final_output
